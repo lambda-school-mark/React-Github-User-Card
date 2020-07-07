@@ -1,7 +1,11 @@
 import React from "react";
 
 const Followers = (props) => {
-  return <div>{props.follower.login}</div>;
+  return (
+    <div className="followerContainer">
+      <p className="follower">{props.follower.login}</p>
+    </div>
+  );
 };
 
 export default Followers;
