@@ -7,46 +7,29 @@ class UserData extends React.Component {
   constructor() {
     super();
     this.state = {
+      username: "",
       user: [],
       followers: [],
-      updatedUser: [],
       input: "slightflow",
     };
   }
 
   componentDidMount() {
-    axios.get(`https://api.github.com/users/${this.input}`).then((res) => {
-      console.log(res);
-      this.setState({
-        user: res.data,
-      });
-    });
-
     axios
-      .get(`https://api.github.com/users/${this.input}/followers`)
-      .then((res) => {
-        console.log(res);
-        this.setState({
-          followers: res.data,
-        });
-      });
-  }
-
-  componentDidMount() {
-    axios
-      .get(`https://api.github.com/users/${this.state.input}`)
-      .then((res) => {
-        this.setState({
-          user: res.data,
-        });
-      });
-    axios
-      .get(`https://api.github.com/users/${this.state.input}/followers`)
-      .then((res) => {
-        this.setState({
-          followers: res.data,
-        });
-      });
+      .all([
+        axios.get(`https://api.github.com/users/${this.state.username}`),
+        axios.get(
+          `https://api.github.com/users/${this.state.username}/followers`
+        ),
+      ])
+      .then(
+        axios.spread((userRes, followerRes) => {
+          this.setState({
+            user: userRes.data,
+            followers: followerRes.data,
+          });
+        })
+      );
   }
 
   handleInput = (e) => {
@@ -55,22 +38,32 @@ class UserData extends React.Component {
     });
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.username !== prevState.username) {
+      axios
+        .all([
+          axios.get(`https://api.github.com/users/${this.state.username}`),
+          axios.get(
+            `https://api.github.com/users/${this.state.username}/followers`
+          ),
+        ])
+        .then(
+          axios.spread((userRes, followerRes) => {
+            this.setState({
+              user: userRes.data,
+              followers: followerRes.data,
+            });
+          })
+        );
+    }
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
-    axios
-      .get(`https://api.github.com/users/${this.state.input}`)
-      .then((res) => {
-        this.setState({
-          user: res.data,
-        });
-      });
-    axios
-      .get(`https://api.github.com/users/${this.state.input}/followers`)
-      .then((res) => {
-        this.setState({
-          followers: res.data,
-        });
-      });
+
+    this.setState({
+      username: this.state.input,
+    });
   };
 
   render() {
